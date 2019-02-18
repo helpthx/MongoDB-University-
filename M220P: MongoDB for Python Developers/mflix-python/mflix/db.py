@@ -77,7 +77,8 @@ def get_movies_by_country(countries):
         # Find movies matching the "countries" list, but only return the title
         # and _id. Do not include a limit in your own implementation, it is
         # included here to avoid sending 46000 documents down the wire.
-        return list(db.movies.find().limit(1))
+        #cursor = mflix.movies.find( { "countries": countries}, { "title": 1, "_id": 0 } )
+        return list(db.movies.find({'countries': {'$in': countries }}, {'title': 1}))
 
     except Exception as e:
         return e
@@ -164,15 +165,7 @@ def get_movies_faceted(filters, page, movies_per_page):
 
 
 def build_query_sort_project(filters):
-    """
-    Builds the `query` predicate, `sort` and `projection` attributes for a given
-    filters dictionary.
-    """
     query = {}
-    # The field "tomatoes.viewer.numReviews" only exists in the movies we want
-    # to display on the front page of MFlix, because they are famous or
-    # aesthetically pleasing. When we sort on it, the movies containing this
-    # field will be displayed at the top of the page.
     sort = [("tomatoes.viewer.numReviews", DESCENDING)]
     project = None
     if filters:
@@ -184,19 +177,11 @@ def build_query_sort_project(filters):
         elif "cast" in filters:
             query = {"cast": {"$in": filters["cast"]}}
         elif "genres" in filters:
-
-            """
-            Ticket: Text and Subfield Search
-
-            Given a genre in the "filters" object, construct a query that
-            searches MongoDB for movies with that genre.
-            """
-
-            # TODO: Text and Subfield Search
-            # Construct a query that will search for the chosen genre.
-            query = {}
-
+            # here's an implementation of the "genres" query
+            query = {"genres": {"$in": filters["genres"]}}
     return query, sort, project
+
+
 
 
 def get_movies(filters, page, movies_per_page):

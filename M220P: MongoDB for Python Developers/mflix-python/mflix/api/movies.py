@@ -230,7 +230,7 @@ def get_conn_pool_size():
         return jsonify({
             'pool_size': pool_size,
             'wtimeout': w_concern._WriteConcern__document.get('wtimeout', '0'),
-
+            **user_info
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
